@@ -36,3 +36,35 @@
     transform: rotate(360deg);
   }
 }
+
+
+
+
+
+
+
+
+
+
+.App {
+  font-family: Arial, sans-serif;
+}
+
+h2 {
+  color: #007bff;
+}
+
+.tree-node {
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.tree-node:hover {
+  color: #007bff;
+}
+
+.asset-details {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+}
