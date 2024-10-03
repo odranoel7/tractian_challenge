@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import TreeNode from './TreeNode';
 import './AssetTree.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import exportIcon from '../assets/icons/exportIcon.png';
+import 'typeface-inter';
 
 const AssetTree = ({companyId}) => {
   const [data, setData]                                     = useState([]);
@@ -209,9 +211,9 @@ const AssetTree = ({companyId}) => {
       <div className="header">
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', marginLeft: '10px'}}>
           <div>
-            <label style={{fontWeight: '700', fontSize: '20px'}}>Ativos</label>
+            <label style={{fontFamily: 'Inter', fontWeight: '700', fontSize: '20px'}}>Ativos</label>
             &nbsp;
-            <label style={{fontWeight: '200', fontSize: '15px'}}>/ {unitName}</label>
+            <label style={{fontFamily: 'Inter', fontWeight: '200', fontSize: '15px'}}>/ {unitName}</label>
           </div>
   
           <div style={{ marginRight: '10px', display: 'flex', gap: '10px' }}>
@@ -252,7 +254,68 @@ const AssetTree = ({companyId}) => {
         </div>
 
         <div className="body-container">
-          
+          <div id="containerBlock">
+            <div style={{margin: '-10px', paddingBottom: '10px', border: '1px solid rgba(0, 0, 0, 0.1)', height: 'auto'}}>
+              <label id="componentName" style={{fontFamily: 'Inter', fontSize: '18px', marginLeft: '20px', fontWeight: '600'}}>
+                
+              </label>
+            </div>
+
+            <div style={{display: 'flex', marginTop: '30px', alignItems: 'center', justifyContent: 'center'}}>
+              <div style={{ width: '336px', height: '226px', backgroundColor: '#f2f8ff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '5px' }}>
+                <img src={exportIcon} alt="Export Icon" style={{ width: '42px', height: '42px'}} />
+                <p style={{ textAlign: 'center', margin: 0, color: '#2188ff' }}>
+                  Adicionar imagem do ativo
+                </p>
+              </div>
+
+              <div style={{marginLeft: '15px', width: '100%', marginRight: '20px'}}>
+                <label style={{fontFamily: 'Inter', display: 'block', fontWeight: 600, fontSize: '16px'}}>
+                  Tipo de Equipamento
+                </label>
+
+                <label id='equipamentType' style={{display: 'block', marginTop: '10px', fontWeight: 400, fontFamily: 'Inter', fontSize: '16px'}}>
+                  
+                </label>
+
+                <div style={{height: '1px', width: '100%', backgroundColor: '#E3EAEF', marginTop: '20px'}}></div>
+
+                <label style={{display: 'block', marginTop: '20px', fontWeight: 600, fontFamily: 'Inter', fontSize: '16px'}}>
+                  Responsáveis
+                </label>
+
+                <label id='responsible' style={{display: 'block', marginTop: '10px', fontWeight: 400, fontFamily: 'Inter', fontSize: '16px'}}>
+                  
+                </label>
+
+              </div>
+            </div>
+
+            <div style={{height: '1px', width: '98%', backgroundColor: '#E3EAEF', marginTop: '30px'}}></div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '60%', alignItems: 'flex-start', marginTop: '40px'}}>
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, fontFamily: 'Inter', fontSize: '16px' }}>
+                  Sensor
+                </label>
+
+                <label id='sensor' style={{ display: 'block', marginTop: '10px', fontWeight: 400, fontFamily: 'Inter', fontSize: '16px' }}>
+                  
+                </label>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, fontFamily: 'Inter', fontSize: '16px' }}>
+                  Receptor
+                </label>
+
+                <label id='gateway' style={{ display: 'block', marginTop: '10px', fontWeight: 400, fontFamily: 'Inter', fontSize: '16px' }}>
+                  
+                </label>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

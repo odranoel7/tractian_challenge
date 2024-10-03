@@ -6,7 +6,7 @@ import iconLocation from '../assets/icons/location.png';
 
 const TreeNode = ({ node, onSelect, level = 0 }) => {
   const [isOpen, setIsOpen] = useState(false);
-
+  
   const toggleOpen = () => {
     setIsOpen(!isOpen);
   };
