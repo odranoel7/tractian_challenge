@@ -11,17 +11,14 @@ const TreeNode = ({ node, onSelect, level = 0 }) => {
     setIsOpen(!isOpen);
   };
 
-  const getIcon = (sensorType) => {
-    
-    switch (sensorType) {
-      // case 'asset':
-      //   return iconAsset;
-      // case 'component':
-      //   return iconComponent;
-      // case 'location':
-      //   return iconLocation;
-      default:
-        return iconLocation; // Ícone padrão
+  const getIcon = (node) => {
+    // console.log(Object.keys(node).length)
+    if (Object.keys(node).length == 4) {
+      return iconLocation;
+    } else if (node.children && node.children.length > 0)  {
+      return iconAsset;
+    } else {
+      return iconComponent;
     }
   };
 
@@ -41,7 +38,7 @@ const TreeNode = ({ node, onSelect, level = 0 }) => {
         </div>
 
         <img
-          src={getIcon(node.sensorType)}
+          src={getIcon(node)}
           alt={node.sensorType}
           style={{
             width: '20px',

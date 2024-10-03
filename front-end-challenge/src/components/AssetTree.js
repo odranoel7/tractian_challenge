@@ -4,11 +4,11 @@ import './AssetTree.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const AssetTree = ({companyId}) => {
-  const [data, setData] = useState([]); // Dados completos da árvore
-  const [filteredData, setFilteredData] = useState([]); // Dados filtrados
-  const [searchTerm, setSearchTerm] = useState(''); // Armazenar o termo de busca
-  const [isEnergyFilterActive, setIsEnergyFilterActive] = useState(false); // Estado do filtro de energia
-  const [isCriticalFilterActive, setIsCriticalFilterActive] = useState(false); // Estado do filtro de energia
+  const [data, setData]                                     = useState([]);
+  const [filteredData, setFilteredData]                     = useState([]);
+  const [searchTerm, setSearchTerm]                         = useState('');
+  const [isEnergyFilterActive, setIsEnergyFilterActive]     = useState(false);
+  const [isCriticalFilterActive, setIsCriticalFilterActive] = useState(false);
 
   const unitNames = {
     '662fd0ee639069143a8fc387': 'Jaguar Unit',
@@ -16,7 +16,6 @@ const AssetTree = ({companyId}) => {
     '662fd100f990557384756e58': 'Apex Unit'
   };
 
-  // Busque o nome da unidade com base no companyId
   let unitName = unitNames[companyId] || 'Unidade Desconhecida';
 
   useEffect(() => {
@@ -228,26 +227,32 @@ const AssetTree = ({companyId}) => {
           </div>
         </div>
       </div>
-  
-      <div className="asset-tree-container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', marginLeft: '-10px', marginTop: '-10px', marginRight: '-10px'}}>
-          <input
-            type="text"
-            placeholder="Buscar Ativo ou Local"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ padding: '10px', width: '100%', border: '1px solid rgba(0, 0, 0, 0.1)' }}
-          />
+
+      <div style={{display: 'flex'}}>
+        <div className="asset-tree-container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', marginLeft: '-10px', marginTop: '-10px', marginRight: '-10px'}}>
+            <input
+              type="text"
+              placeholder="Buscar Ativo ou Local"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ padding: '10px', width: '100%', border: '1px solid rgba(0, 0, 0, 0.1)' }}
+            />
+          </div>
+    
+          <div style={{ marginLeft: '10px'}}>
+            {filteredData.length > 0 ? (
+              filteredData.map(node => (
+                <TreeNode key={node.id} node={node} />
+              ))
+            ) : (
+              <p>Nenhum ativo encontrado.</p>
+            )}
+          </div>
         </div>
-  
-        <div style={{ marginLeft: '10px'}}>
-          {filteredData.length > 0 ? (
-            filteredData.map(node => (
-              <TreeNode key={node.id} node={node} />
-            ))
-          ) : (
-            <p>Nenhum ativo encontrado.</p>
-          )}
+
+        <div className="body-container">
+          
         </div>
       </div>
     </div>

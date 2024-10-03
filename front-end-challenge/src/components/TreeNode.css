@@ -1,0 +1,16 @@
+.tree-node {
+    padding: 10px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background-color 0.3s ease;
+}
+
+.tree-node:hover {
+    background-color: #f0f0f0;
+}
+
+.tree-node.selected {
+    background-color: #2188ff;
+    color: white;
+    border-color: #2188ff;
+}
