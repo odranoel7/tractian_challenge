@@ -5,75 +5,37 @@ const AssetTree = () => {
   const [data, setData] = useState([]); // Dados completos da árvore
   const [filteredData, setFilteredData] = useState([]); // Dados filtrados
   const [searchTerm, setSearchTerm] = useState(''); // Armazenar o termo de busca
+  const [isEnergyFilterActive, setIsEnergyFilterActive] = useState(false); // Estado do filtro de energia
+  const [isCriticalFilterActive, setIsCriticalFilterActive] = useState(false); // Estado do filtro de energia
 
   useEffect(() => {
-    // const fetchData = async () => {
-    //   // Buscar os dados de 'locations'
-    //   const locationsResponse = await fetch('http://fake-api.tractian.com/companies/662fd0ee639069143a8fc387/locations');
-    //   const locationsResult = await locationsResponse.json();
-
-    //   // Buscar os dados de 'assets'
-    //   const assetsResponse = await fetch('http://fake-api.tractian.com/companies/662fd0ee639069143a8fc387/assets');
-    //   const assetsResult = await assetsResponse.json();
-
-    //   // Construir a árvore de 'locations'
-    //   const locationTree = buildTree(locationsResult);
-
-    //   // Integrar os 'assets' na árvore
-    //   const treeWithAssets = integrateAssets(locationTree, assetsResult);
-
-    //   setData(treeWithAssets); // Definir a estrutura de árvore com 'locations' e 'assets'
-    //   setFilteredData(treeWithAssets); // Inicialmente, todos os dados são exibidos
-    // };
-
     const fetchData = async () => {
-      // Buscar os dados de 'locations'
-      const locationsResponse = await fetch('http://fake-api.tractian.com/companies/662fd0ee639069143a8fc387/locations');
-      const locationsResult = await locationsResponse.json();
-    
-      // Ordenar os locais: primeiro aqueles com parentId == null
-      // const sortedLocations = locationsResult.sort((a, b) => {
-      //   // Se a.parentId é null, deve vir antes
-      //   if (a.parentId === null && b.parentId !== null) return -1;
-      //   if (a.parentId !== null && b.parentId === null) return 1;
-      //   return 0; // Mantém a ordem se ambos têm ou não têm parentId
-      // });
-    
-      // Buscar os dados de 'assets'
-      const assetsResponse = await fetch('http://fake-api.tractian.com/companies/662fd0ee639069143a8fc387/assets');
-      const assetsResult = await assetsResponse.json();
-    
-      // Ordenar os ativos: primeiro aqueles com parentId == null
-      const sortedAssets = assetsResult.sort((a, b) => {
-        if (a.parentId === null && b.parentId !== null) return -1;
-        if (a.parentId !== null && b.parentId === null) return 1;
-        return 0; // Mantém a ordem se ambos têm ou não têm parentId
-      });
-    
-      // Construir a árvore de 'locations'
-      const locationTree = buildTree(locationsResult);
-    
-      // Integrar os 'assets' na árvore
-      const treeWithAssets = integrateAssets(locationTree, sortedAssets);
-    
-      setData(treeWithAssets); // Definir a estrutura de árvore com 'locations' e 'assets'
-      setFilteredData(treeWithAssets); // Inicialmente, todos os dados são exibidos
+      let locationsResponse = await fetch('https://fake-api.tractian.com/companies/662fd0ee639069143a8fc387/locations');
+      locationsResponse = await locationsResponse.json();
+      locationsResponse = sortLocations(locationsResponse);
+
+      let assetsResult = await fetch('https://fake-api.tractian.com/companies/662fd0ee639069143a8fc387/assets');
+      assetsResult = await assetsResult.json();
+      assetsResult = sortLocations(assetsResult);
+
+      const locationTree = buildTree(locationsResponse);
+      const treeWithAssets = integrateAssets(locationTree, assetsResult);
+
+      setData(treeWithAssets);
+      setFilteredData(treeWithAssets);
     };
 
     fetchData();
   }, []);
 
-  // Função para transformar a lista plana de 'locations' em uma árvore hierárquica
   const buildTree = (nodes) => {
     const map = {};
     const roots = [];
 
-    // Cria um mapa de nós para facilitar a pesquisa
     nodes.forEach(node => {
       map[node.id] = { ...node, children: [] };
     });
 
-    // Itera sobre os nós e os organiza como filhos ou raízes
     nodes.forEach(node => {
       if (node.parentId) {
         if (map[node.parentId]) {
@@ -87,83 +49,175 @@ const AssetTree = () => {
     return roots;
   };
 
-  // Função para integrar os 'assets' na árvore de 'locations'
   const integrateAssets = (locationsTree, assets) => {
     const map = {};
 
-    // Criar um mapa de 'locations' e 'assets' para facilitar a pesquisa
     const buildMap = (nodes) => {
       nodes.forEach(node => {
         map[node.id] = node;
+        if (!node.children) {
+          node.children = [];
+        }
         if (node.children) {
           buildMap(node.children);
         }
       });
     };
 
-    // Construir o mapa inicial com os 'locations'
     buildMap(locationsTree);
 
-
-    // Iterar sobre os 'assets' e colocá-los no local correto
     assets.forEach(asset => {
-      console.log(asset)
-      if (asset.parentId && map[asset.parentId]) {
-        // Se o asset tem um parentId, associar ao nó do parent asset
-        map[asset.parentId].children.push({ ...asset, children: [] });
-      } else if (asset.locationId && map[asset.locationId]) {
-        // Se o asset tem um locationId, associar ao nó de 'location'
-        map[asset.locationId].children.push({ ...asset, children: [] });
-      } else {
-        // Se não tem 'locationId' ou 'parentId', adiciona no topo da árvore
+      const { id, locationId, parentId } = asset;
+
+      if (locationId && map[locationId]) {
+        map[locationId].children.push({ ...asset, children: [] });
+      } else if (parentId && map[parentId]) {
+        map[parentId].children.push({ ...asset, children: [] });
+      } else if (!locationId && !parentId) {
         locationsTree.push({ ...asset, children: [] });
+      } else {
+        searchChildrens(map, parentId, { ...asset, children: [] });
       }
     });
 
     return locationsTree;
   };
 
-  // Função recursiva para filtrar a árvore de ativos
-  const filterTree = (nodes, searchTerm) => {
-    return nodes.filter(node => {
-      if (node.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-        return true; // Se o nome corresponde ao termo de busca
-      }
-      if (node.children) {
-        // Se há filhos, filtrar recursivamente
-        const filteredChildren = filterTree(node.children, searchTerm);
-        if (filteredChildren.length > 0) {
-          node.children = filteredChildren;
-          return true;
+  const searchChildrens = (obj, idToInsert, newChild) => {
+    Object.values(obj).forEach(item => {
+      if (item.id === idToInsert) {
+        const exists = item.children.some(child => child.id === newChild.id);
+        if (!exists) {
+          item.children.push(newChild);
         }
       }
-      return false;
+
+      if (item.children && item.children.length > 0) {
+        searchChildrens(item.children, idToInsert, newChild);
+      }
     });
+  }
+
+  const sortLocations = (array) => {
+    const firstGroup = array.filter(item => item.locationId === null && item.parentId === null);
+    const secondGroup = array.filter(item => item.locationId !== null && item.parentId === null);
+    const thirdGroup = array.filter(item => 
+        item.locationId === null && item.parentId !== null && 
+        firstGroup.some(firstItem => firstItem.id === item.parentId) || 
+        secondGroup.some(secondItem => secondItem.id === item.parentId)
+    );
+    const fourthGroup = array.filter(item => 
+        !firstGroup.includes(item) && 
+        !secondGroup.includes(item) && 
+        !thirdGroup.includes(item)
+    );
+
+    return [...firstGroup, ...secondGroup, ...thirdGroup, ...fourthGroup];
   };
 
-  // Atualizar os dados filtrados conforme o usuário digita
+  const filterTree = (nodes, searchTerm) => {
+    return nodes.reduce((acc, node) => {
+      const matches = node.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const filteredChildren = filterTree(node.children || [], searchTerm);
+      if (matches || filteredChildren.length > 0) {
+        acc.push({
+          ...node,
+          children: filteredChildren,
+        });
+      }
+      return acc;
+    }, []);
+  };
+
+  const filterByEnergy = (nodes) => {
+    return nodes.reduce((acc, node) => {
+      const hasEnergySensor = node.sensorType === 'energy';
+      const filteredChildren = filterByEnergy(node.children || []);
+
+      if (hasEnergySensor || filteredChildren.length > 0) {
+        acc.push({
+          ...node,
+          children: filteredChildren,
+        });
+      }
+      return acc;
+    }, []);
+  };
+
   useEffect(() => {
     if (searchTerm) {
-      setFilteredData(filterTree([...data], searchTerm)); // Filtrar os dados com base no termo de busca
+        setFilteredData(filterTree([...data], searchTerm));
+    } else if (isEnergyFilterActive) {
+        setFilteredData(filterByEnergy([...data]));
+    } else if (isCriticalFilterActive) {
+        setFilteredData(filterByCritical([...data]));
     } else {
-      setFilteredData(data); // Se não houver termo de busca, exibir todos os dados
+        setFilteredData(data);
     }
-  }, [searchTerm, data]);
+}, [searchTerm, data, isEnergyFilterActive, isCriticalFilterActive]);
+
+  const handleFilterByEnergy = () => {
+    setIsEnergyFilterActive(true);
+  };
+
+  const clearEnergyFilter = () => {
+    setIsEnergyFilterActive(false);
+  };
+
+
+
+
+  const filterByCritical = (nodes) => {
+    return nodes.reduce((acc, node) => {
+      const hasCriticalSensor = node.status === 'alert';
+      const filteredChildren = filterByCritical(node.children || []);
+
+      if (hasCriticalSensor || filteredChildren.length > 0) {
+        acc.push({
+          ...node,
+          children: filteredChildren,
+        });
+      }
+      return acc;
+    }, []);
+  };
+
+  const handleFilterByCritical = () => {
+    setIsCriticalFilterActive(true);
+  };
+
+  const clearCriticalFilter = () => {
+    setIsCriticalFilterActive(false);
+  };
+
+
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <input 
-        type="text"
-        placeholder="Buscar Ativo ou Local"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)} // Atualiza o termo de busca
-        style={{ padding: '10px', marginBottom: '20px', width: '100%', border: '1px solid #ccc' }}
-      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <input 
+          type="text"
+          placeholder="Buscar Ativo ou Local"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ padding: '10px', width: '70%', border: '1px solid #ccc' }}
+        />
+        
+        <button onClick={isEnergyFilterActive ? clearEnergyFilter : handleFilterByEnergy} style={{ padding: '10px', marginLeft: '10px' }}>
+          {isEnergyFilterActive ? 'Limpar Filtro de Energia' : 'Filtrar por Energia'}
+        </button>
+
+        <button onClick={isCriticalFilterActive ? clearCriticalFilter : handleFilterByCritical} style={{ padding: '10px', marginLeft: '-10px' }}>
+          {isCriticalFilterActive ? 'Limpar Filtro Crítico' : 'Crítico'}
+        </button>
+      </div>
+
+
       <div style={{ width: '30%', borderRight: '1px solid #ccc' }}>
         <h2>Árvore de Ativos</h2>
         {filteredData.length > 0 ? (
           filteredData.map(node => (
-            <TreeNode key={node.id} node={node} /> // Renderiza os nós filtrados
+            <TreeNode key={node.id} node={node} />
           ))
         ) : (
           <p>Nenhum ativo encontrado.</p>
