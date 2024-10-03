@@ -1,20 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import TreeNode from './TreeNode';
+import './AssetTree.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
-const AssetTree = () => {
+const AssetTree = ({companyId}) => {
   const [data, setData] = useState([]); // Dados completos da árvore
   const [filteredData, setFilteredData] = useState([]); // Dados filtrados
   const [searchTerm, setSearchTerm] = useState(''); // Armazenar o termo de busca
   const [isEnergyFilterActive, setIsEnergyFilterActive] = useState(false); // Estado do filtro de energia
   const [isCriticalFilterActive, setIsCriticalFilterActive] = useState(false); // Estado do filtro de energia
 
+  const unitNames = {
+    '662fd0ee639069143a8fc387': 'Jaguar Unit',
+    '662fd0fab3fd5656edb39af5': 'Tobias Unit',
+    '662fd100f990557384756e58': 'Apex Unit'
+  };
+
+  // Busque o nome da unidade com base no companyId
+  let unitName = unitNames[companyId] || 'Unidade Desconhecida';
+
   useEffect(() => {
+    if (!companyId) return; // Não faz a requisição se nenhum ID for passado
+
     const fetchData = async () => {
-      let locationsResponse = await fetch('https://fake-api.tractian.com/companies/662fd0ee639069143a8fc387/locations');
+      let locationsResponse = await fetch(`https://fake-api.tractian.com/companies/${companyId}/locations`);
       locationsResponse = await locationsResponse.json();
       locationsResponse = sortLocations(locationsResponse);
 
-      let assetsResult = await fetch('https://fake-api.tractian.com/companies/662fd0ee639069143a8fc387/assets');
+      let assetsResult = await fetch(`https://fake-api.tractian.com/companies/${companyId}/assets`);
       assetsResult = await assetsResult.json();
       assetsResult = sortLocations(assetsResult);
 
@@ -26,7 +39,7 @@ const AssetTree = () => {
     };
 
     fetchData();
-  }, []);
+  }, [companyId]);
 
   const buildTree = (nodes) => {
     const map = {};
@@ -193,35 +206,49 @@ const AssetTree = () => {
 
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <input 
-          type="text"
-          placeholder="Buscar Ativo ou Local"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ padding: '10px', width: '70%', border: '1px solid #ccc' }}
-        />
-        
-        <button onClick={isEnergyFilterActive ? clearEnergyFilter : handleFilterByEnergy} style={{ padding: '10px', marginLeft: '10px' }}>
-          {isEnergyFilterActive ? 'Limpar Filtro de Energia' : 'Filtrar por Energia'}
-        </button>
-
-        <button onClick={isCriticalFilterActive ? clearCriticalFilter : handleFilterByCritical} style={{ padding: '10px', marginLeft: '-10px' }}>
-          {isCriticalFilterActive ? 'Limpar Filtro Crítico' : 'Crítico'}
-        </button>
+    <div className="container">
+      <div className="header">
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', marginLeft: '10px'}}>
+          <div>
+            <label style={{fontWeight: '700', fontSize: '20px'}}>Ativos</label>
+            &nbsp;
+            <label style={{fontWeight: '200', fontSize: '15px'}}>/ {unitName}</label>
+          </div>
+  
+          <div style={{ marginRight: '10px', display: 'flex', gap: '10px' }}>
+            <button onClick={isEnergyFilterActive ? clearEnergyFilter : handleFilterByEnergy} className='btn-filter'>
+              <i className="fas fa-bolt" style={{ marginRight: '5px', color: '#2188ff'}}></i>
+              {isEnergyFilterActive ? 'Limpar Sensor de Energia' : 'Sensor de Energia'}
+            </button>
+  
+            <button onClick={isCriticalFilterActive ? clearCriticalFilter : handleFilterByCritical} className='btn-filter'>
+              <i className="fas fa-info-circle" style={{ marginRight: '5px', color: '#2188ff'}}></i>
+              {isCriticalFilterActive ? 'Limpar Crítico' : 'Crítico'}
+            </button>
+          </div>
+        </div>
       </div>
-
-
-      <div style={{ width: '30%', borderRight: '1px solid #ccc' }}>
-        <h2>Árvore de Ativos</h2>
-        {filteredData.length > 0 ? (
-          filteredData.map(node => (
-            <TreeNode key={node.id} node={node} />
-          ))
-        ) : (
-          <p>Nenhum ativo encontrado.</p>
-        )}
+  
+      <div className="asset-tree-container">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', marginLeft: '-10px', marginTop: '-10px', marginRight: '-10px'}}>
+          <input
+            type="text"
+            placeholder="Buscar Ativo ou Local"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ padding: '10px', width: '100%', border: '1px solid rgba(0, 0, 0, 0.1)' }}
+          />
+        </div>
+  
+        <div style={{ marginLeft: '10px'}}>
+          {filteredData.length > 0 ? (
+            filteredData.map(node => (
+              <TreeNode key={node.id} node={node} />
+            ))
+          ) : (
+            <p>Nenhum ativo encontrado.</p>
+          )}
+        </div>
       </div>
     </div>
   );
